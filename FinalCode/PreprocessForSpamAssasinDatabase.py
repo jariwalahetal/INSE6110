@@ -33,7 +33,7 @@ BagOfWordsCount = [0,0,0,0,0,0,0,0]
 BagOfWordsCountForCount = [0,0,0,0,0,0,0,0]
 
 
-PreprocessFileName1 = "preprocess1.csv"
+PreprocessFileName1 = "IntermediatePreprocessDataForSpamAssassin.csv"
 MAX_TRIAL = 7
 
 def parse_prefix(line, fmt):
@@ -62,7 +62,7 @@ def Get_Time(string, trial,org):
         stringDate = ' '.join(dateParts[:-1])
 
     if(trial == MAX_TRIAL):
-        print(org)
+        #print(org)
         return "XXXXXXXXXX"
 
     try:
@@ -159,7 +159,7 @@ def process_foler(path,isSpam):
         dateString = Get_Time(str(dateString),1,str(dateString))
 
         if (dateString != "XXXXXXXXXX"):
-            with open("preprocess1.csv",mode='a+') as p:
+            with open("IntermediatePreprocessDataForSpamAssassin.csv",mode='a+') as p:
                 p.write(file)
                 #print(BagOfWordsCount)
                 idx = 0
@@ -204,8 +204,20 @@ def process_count(content, isSpam):
 
     return {'sentDate':datestring,'wordsCount':BagOfWordsCount}
 
+def generateProbability(totalCount, categoryCount, totalMyCount, myCount):
+    P_word_category = totalMyCount / categoryCount
+    P_category = categoryCount / totalCount
+    P_word = myCount / totalCount
+    if myCount == 0:
+        return 0
+    else:
+        return round((P_word_category * P_category) / P_word,2)
+
 def StartPreprocessing():
-    # Extract the spam tar.bz2 file and create a new directory containing the spam archive
+    global SpamCounts
+    global HamCounts
+    global TotalCounts
+    #Extract the spam tar.bz2 file and create a new directory containing the spam archive
     tar = tarfile.open("E:/INSE 6180/20021010_spam.tar.bz2", "r:bz2")
     tar.extractall("E:/INSE 6180/data/spam")
     tar.close()
@@ -233,7 +245,7 @@ def StartPreprocessing():
     tar.extractall("E:/INSE 6180/data/ham")
     tar.close()
 
-    with open("preprocess1.csv",mode='w') as p:
+    with open("IntermediatePreprocessDataForSpamAssassin.csv",mode='w') as p:
         print("Emptied the preprocessed file")
 
 
@@ -260,74 +272,83 @@ def StartPreprocessing():
     print(HamCounts)
     print(TotalCounts)
 
-    # p_BagOfWordsCountForCount_spam = [BagOfWordsCountForCount[0]/SpamCounts,
-    #                              BagOfWordsCountForCount[1] / SpamCounts,
-    #                              BagOfWordsCountForCount[2] / SpamCounts,
-    #                              BagOfWordsCountForCount[3] / SpamCounts,
-    #                              BagOfWordsCountForCount[4] / SpamCounts,
-    #                              BagOfWordsCountForCount[5] / SpamCounts,
-    #                              BagOfWordsCountForCount[6] / SpamCounts,
-    #                              BagOfWordsCountForCount[7] / SpamCounts]
-    #
-    # p_spam = SpamCounts / TotalCounts
+    p_BagOfWordsCountForCount_spam = [BagOfWordsCountForCount[0]/SpamCounts,
+                                 BagOfWordsCountForCount[1] / SpamCounts,
+                                 BagOfWordsCountForCount[2] / SpamCounts,
+                                 BagOfWordsCountForCount[3] / SpamCounts,
+                                 BagOfWordsCountForCount[4] / SpamCounts,
+                                 BagOfWordsCountForCount[5] / SpamCounts,
+                                 BagOfWordsCountForCount[6] / SpamCounts,
+                                 BagOfWordsCountForCount[7] / SpamCounts]
 
-    with open("FinalPreprocessData2.csv",mode='w') as p:
-        p.write("filename,offer_count,free_count,dollar_count,win_count,order_count,business_count,lottery_count, mail_count,no_of_url,time_of_email,Spam")
-        p.write("\n")
+    p_BagOfWordsCountForCount_ham = [BagOfWordsCountForCount[0] / HamCounts,
+                                      BagOfWordsCountForCount[1] / HamCounts,
+                                      BagOfWordsCountForCount[2] / HamCounts,
+                                      BagOfWordsCountForCount[3] / HamCounts,
+                                      BagOfWordsCountForCount[4] / HamCounts,
+                                      BagOfWordsCountForCount[5] / HamCounts,
+                                      BagOfWordsCountForCount[6] / HamCounts,
+                                      BagOfWordsCountForCount[7] / HamCounts]
+
+    p_spam = SpamCounts / TotalCounts
+    p_ham = HamCounts / TotalCounts
+
+    with open("FinalPreprocessDataForSpamAssassin.csv",mode='w') as p:
+        p.write("offer_count,free_count,dollar_count,win_count,order_count,business_count,lottery_count, mail_count,no_of_url,time_of_email,Spam\n")
         with open(PreprocessFileName1) as f:
             for line in f:
-                print(line)
+                # print(line)
                 seprated = line.split(",")
                 #p.write(seprated[0])
                 #p.write(",")
                 #P(offer/spam or ham)
-                if(p.write(seprated[11]) == "1"):
-                    p.write(str(int(seprated[1])/SpamCounts))
+                if(seprated[11] == '1\n'):
+                    p.write(str(generateProbability(TotalCounts, SpamCounts,p_BagOfWordsCountForCount_spam[0],(int(seprated[1])))))
                     p.write(",")
                     # P(free/spam)
-                    p.write(str(int(seprated[2]) / SpamCounts))
+                    p.write(str(generateProbability(TotalCounts, SpamCounts,p_BagOfWordsCountForCount_spam[1],(int(seprated[2])))))
                     p.write(",")
                     # P(dollar/spam)
-                    p.write(str(int(seprated[3]) / SpamCounts))
+                    p.write(str(generateProbability(TotalCounts, SpamCounts,p_BagOfWordsCountForCount_spam[2],(int(seprated[3])))))
                     p.write(",")
                     # P(win/spam)
-                    p.write(str(int(seprated[4]) / SpamCounts))
+                    p.write(str(generateProbability(TotalCounts, SpamCounts,p_BagOfWordsCountForCount_spam[3],(int(seprated[4])))))
                     p.write(",")
                     # P(order/spam)
-                    p.write(str(int(seprated[5]) / SpamCounts))
+                    p.write(str(generateProbability(TotalCounts, SpamCounts,p_BagOfWordsCountForCount_spam[4],(int(seprated[5])))))
                     p.write(",")
                     # P(Business/spam)
-                    p.write(str(int(seprated[6]) / SpamCounts))
+                    p.write(str(generateProbability(TotalCounts, SpamCounts,p_BagOfWordsCountForCount_spam[5],(int(seprated[6])))))
                     p.write(",")
                     # P(Lottery/spam)
-                    p.write(str(int(seprated[7]) / SpamCounts))
+                    p.write(str(generateProbability(TotalCounts, SpamCounts,p_BagOfWordsCountForCount_spam[6],(int(seprated[7])))))
                     p.write(",")
                     # P(Mail/spam)
-                    p.write(str(int(seprated[8]) / SpamCounts))
+                    p.write(str(generateProbability(TotalCounts, SpamCounts,p_BagOfWordsCountForCount_spam[7],(int(seprated[8])))))
                     p.write(",")
                 else:
-                    p.write(str(int(seprated[1]) / HamCounts))
+                    p.write(str(generateProbability(TotalCounts, HamCounts, p_BagOfWordsCountForCount_ham[0],(int(seprated[1])))))
                     p.write(",")
                     # P(free/spam)
-                    p.write(str(int(seprated[2]) / HamCounts))
+                    p.write(str(generateProbability(TotalCounts, HamCounts, p_BagOfWordsCountForCount_ham[1],(int(seprated[2])))))
                     p.write(",")
                     # P(dollar/spam)
-                    p.write(str(int(seprated[3]) / HamCounts))
+                    p.write(str(generateProbability(TotalCounts, HamCounts, p_BagOfWordsCountForCount_ham[2],(int(seprated[3])))))
                     p.write(",")
                     # P(win/spam)
-                    p.write(str(int(seprated[4]) / HamCounts))
+                    p.write(str(generateProbability(TotalCounts, HamCounts, p_BagOfWordsCountForCount_ham[3],(int(seprated[4])))))
                     p.write(",")
                     # P(order/spam)
-                    p.write(str(int(seprated[5]) / HamCounts))
+                    p.write(str(generateProbability(TotalCounts, HamCounts, p_BagOfWordsCountForCount_ham[4],(int(seprated[5])))))
                     p.write(",")
                     # P(Business/spam)
-                    p.write(str(int(seprated[6]) / HamCounts))
+                    p.write(str(generateProbability(TotalCounts, HamCounts, p_BagOfWordsCountForCount_ham[5],(int(seprated[6])))))
                     p.write(",")
-                    # P(Lottery/spam)
-                    p.write(str(int(seprated[7]) / HamCounts))
+                    # P(Lottery/spam)C
+                    p.write(str(generateProbability(TotalCounts, HamCounts, p_BagOfWordsCountForCount_ham[6],(int(seprated[7])))))
                     p.write(",")
                     # P(Mail/spam)
-                    p.write(str(int(seprated[8]) / HamCounts))
+                    p.write(str(generateProbability(TotalCounts, HamCounts, p_BagOfWordsCountForCount_ham[7],(int(seprated[8])))))
                     p.write(",")
                 # url count
                 p.write(seprated[9])

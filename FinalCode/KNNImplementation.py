@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
-from sklearn import neighbors
 import itertools
 import math
 import operator

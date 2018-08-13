@@ -30,6 +30,7 @@ class NB:
         avg = self.mean(numbers)
         numerator = sum([pow(x - avg, 2) for x in numbers])
         denominator = float(len(numbers) - 1)
+        print(str(numerator) + "--" + str(denominator))
         variance = numerator / denominator
         return math.sqrt(variance)
 
@@ -72,9 +73,9 @@ class NB:
         return bestClass
 
     def getPredictions(self):
-        predictions = []
+        self.predictions = []
         summaries = self.summaryByClass()
         for i in range(len(self.testdata)):
             result = self.predict(summaries, self.testdata[i])
-            predictions.append(result)
-        return predictions
+            self.predictions.append(result)
+        return self.predictions

@@ -61,7 +61,7 @@ class SimulateResults:
         plt.xlabel('Predicted label\naccuracy={:0.4f}; misclass={:0.4f}'.format(accuracy, misclass))
         plt.show()
 
-    def calculate(self,cmatrix):
+    def calculate(self, cmatrix):
         i = 0
         true_positive = cmatrix[i][0]
         false_negative = cmatrix[i][1]
@@ -70,19 +70,19 @@ class SimulateResults:
         sdr = true_positive / (true_positive + false_negative)
         ldr = true_negative / (true_negative + false_positive)
         tdr = (true_positive + true_negative) / (true_positive + false_negative + true_positive + false_positive)
-        return (sdr, ldr, tdr)
+        return (round(sdr, 4), round(ldr, 4), round(tdr, 4))
 
-    def generateGraph(self,data):
-        N = 4
+    def generateGraph(self, data):
         y = []
         z = []
         k = []
+        N = 4
         width = 0.27
         ind = np.arange(N)
         for dict in data:
             classifier = dict['classifier']
             sdr = dict['sdr']
-            ltr = dict['ltr']
+            ltr = dict['ldr']
             tdr = dict['tdr']
             y.append(sdr)
             k.append(tdr)
@@ -95,6 +95,6 @@ class SimulateResults:
         ax.legend((rects1[0], rects2[0], rects3[0]), ('SDR', 'LDR', 'TDR'))
         ax.set_ylabel('Detection Rate')
         ax.set_xticks(ind + width)
-        ax.set_xticklabels(('KNN', 'Naive Bayes', 'SVM', 'Decision Trees'))
+        ax.set_xticklabels(('KNN', 'Naive Bayes', 'Decision Trees', 'SVM'))
 
         plt.show()
