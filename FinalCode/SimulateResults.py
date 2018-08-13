@@ -9,7 +9,7 @@ import math
 import operator
 
 class SimulateResults:
-    def getAccuracy(testResult, predictions):
+    def getAccuracy(self,testResult, predictions):
         correct = 0
         for x in range(len(testResult)):
             if testResult[x] == predictions[x]:
@@ -43,20 +43,58 @@ class SimulateResults:
             plt.yticks(tick_marks, target_names)
 
         if normalize:
-            cm = confusionmatrix.astype('float') / confusionmatrix.sum(axis=1)[:, np.newaxis]
+            confusionmatrix = confusionmatrix.astype('float') / confusionmatrix.sum(axis=1)[:, np.newaxis]
 
         thresh = confusionmatrix.max() / 1.5 if normalize else confusionmatrix.max() / 2
-        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        for i, j in itertools.product(range(confusionmatrix.shape[0]), range(confusionmatrix.shape[1])):
             if normalize:
-                plt.text(j, i, "{:0.4f}".format(cm[i, j]),
+                plt.text(j, i, "{:0.4f}".format(confusionmatrix[i, j]),
                          horizontalalignment="center",
-                         color="white" if cm[i, j] > thresh else "black")
+                         color="white" if confusionmatrix[i, j] > thresh else "black")
             else:
-                plt.text(j, i, "{:,}".format(cm[i, j]),
+                plt.text(j, i, "{:,}".format(confusionmatrix[i, j]),
                          horizontalalignment="center",
-                         color="white" if cm[i, j] > thresh else "black")
+                         color="white" if confusionmatrix[i, j] > thresh else "black")
 
         plt.tight_layout()
         plt.ylabel('True label')
         plt.xlabel('Predicted label\naccuracy={:0.4f}; misclass={:0.4f}'.format(accuracy, misclass))
+        plt.show()
+
+    def calculate(self,cmatrix):
+        i = 0
+        true_positive = cmatrix[i][0]
+        false_negative = cmatrix[i][1]
+        false_positive = cmatrix[i + 1][0]
+        true_negative = cmatrix[i + 1][1]
+        sdr = true_positive / (true_positive + false_negative)
+        ldr = true_negative / (true_negative + false_positive)
+        tdr = (true_positive + true_negative) / (true_positive + false_negative + true_positive + false_positive)
+        return (sdr, ldr, tdr)
+
+    def generateGraph(self,data):
+        N = 4
+        y = []
+        z = []
+        k = []
+        width = 0.27
+        ind = np.arange(N)
+        for dict in data:
+            classifier = dict['classifier']
+            sdr = dict['sdr']
+            ltr = dict['ltr']
+            tdr = dict['tdr']
+            y.append(sdr)
+            k.append(tdr)
+            z.append(ltr)
+
+        ax = plt.subplot(111)
+        rects1 = ax.bar(ind, y, width, color='b', align='center')
+        rects2 = ax.bar(ind + width, z, width, color='g', align='center')
+        rects3 = ax.bar(ind + width * 2, k, width, color='r', align='center')
+        ax.legend((rects1[0], rects2[0], rects3[0]), ('SDR', 'LDR', 'TDR'))
+        ax.set_ylabel('Detection Rate')
+        ax.set_xticks(ind + width)
+        ax.set_xticklabels(('KNN', 'Naive Bayes', 'SVM', 'Decision Trees'))
+
         plt.show()

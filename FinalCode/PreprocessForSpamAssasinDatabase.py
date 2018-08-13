@@ -260,16 +260,16 @@ def StartPreprocessing():
     print(HamCounts)
     print(TotalCounts)
 
-    p_BagOfWordsCountForCount_spam = [BagOfWordsCountForCount[0]/SpamCounts,
-                                 BagOfWordsCountForCount[1] / SpamCounts,
-                                 BagOfWordsCountForCount[2] / SpamCounts,
-                                 BagOfWordsCountForCount[3] / SpamCounts,
-                                 BagOfWordsCountForCount[4] / SpamCounts,
-                                 BagOfWordsCountForCount[5] / SpamCounts,
-                                 BagOfWordsCountForCount[6] / SpamCounts,
-                                 BagOfWordsCountForCount[7] / SpamCounts]
-
-    p_spam = SpamCounts / TotalCounts
+    # p_BagOfWordsCountForCount_spam = [BagOfWordsCountForCount[0]/SpamCounts,
+    #                              BagOfWordsCountForCount[1] / SpamCounts,
+    #                              BagOfWordsCountForCount[2] / SpamCounts,
+    #                              BagOfWordsCountForCount[3] / SpamCounts,
+    #                              BagOfWordsCountForCount[4] / SpamCounts,
+    #                              BagOfWordsCountForCount[5] / SpamCounts,
+    #                              BagOfWordsCountForCount[6] / SpamCounts,
+    #                              BagOfWordsCountForCount[7] / SpamCounts]
+    #
+    # p_spam = SpamCounts / TotalCounts
 
     with open("FinalPreprocessData2.csv",mode='w') as p:
         p.write("filename,offer_count,free_count,dollar_count,win_count,order_count,business_count,lottery_count, mail_count,no_of_url,time_of_email,Spam")
@@ -280,30 +280,55 @@ def StartPreprocessing():
                 seprated = line.split(",")
                 #p.write(seprated[0])
                 #p.write(",")
-                #P(offer/spam)
-                p.write(str(int(seprated[1])/SpamCounts))
-                p.write(",")
-                # P(free/spam)
-                p.write(str(int(seprated[2]) / SpamCounts))
-                p.write(",")
-                # P(dollar/spam)
-                p.write(str(int(seprated[3]) / SpamCounts))
-                p.write(",")
-                # P(win/spam)
-                p.write(str(int(seprated[4]) / SpamCounts))
-                p.write(",")
-                # P(order/spam)
-                p.write(str(int(seprated[5]) / SpamCounts))
-                p.write(",")
-                # P(Business/spam)
-                p.write(str(int(seprated[6]) / SpamCounts))
-                p.write(",")
-                # P(Lottery/spam)
-                p.write(str(int(seprated[7]) / SpamCounts))
-                p.write(",")
-                # P(Mail/spam)
-                p.write(str(int(seprated[8]) / SpamCounts))
-                p.write(",")
+                #P(offer/spam or ham)
+                if(p.write(seprated[11]) == "1"):
+                    p.write(str(int(seprated[1])/SpamCounts))
+                    p.write(",")
+                    # P(free/spam)
+                    p.write(str(int(seprated[2]) / SpamCounts))
+                    p.write(",")
+                    # P(dollar/spam)
+                    p.write(str(int(seprated[3]) / SpamCounts))
+                    p.write(",")
+                    # P(win/spam)
+                    p.write(str(int(seprated[4]) / SpamCounts))
+                    p.write(",")
+                    # P(order/spam)
+                    p.write(str(int(seprated[5]) / SpamCounts))
+                    p.write(",")
+                    # P(Business/spam)
+                    p.write(str(int(seprated[6]) / SpamCounts))
+                    p.write(",")
+                    # P(Lottery/spam)
+                    p.write(str(int(seprated[7]) / SpamCounts))
+                    p.write(",")
+                    # P(Mail/spam)
+                    p.write(str(int(seprated[8]) / SpamCounts))
+                    p.write(",")
+                else:
+                    p.write(str(int(seprated[1]) / HamCounts))
+                    p.write(",")
+                    # P(free/spam)
+                    p.write(str(int(seprated[2]) / HamCounts))
+                    p.write(",")
+                    # P(dollar/spam)
+                    p.write(str(int(seprated[3]) / HamCounts))
+                    p.write(",")
+                    # P(win/spam)
+                    p.write(str(int(seprated[4]) / HamCounts))
+                    p.write(",")
+                    # P(order/spam)
+                    p.write(str(int(seprated[5]) / HamCounts))
+                    p.write(",")
+                    # P(Business/spam)
+                    p.write(str(int(seprated[6]) / HamCounts))
+                    p.write(",")
+                    # P(Lottery/spam)
+                    p.write(str(int(seprated[7]) / HamCounts))
+                    p.write(",")
+                    # P(Mail/spam)
+                    p.write(str(int(seprated[8]) / HamCounts))
+                    p.write(",")
                 # url count
                 p.write(seprated[9])
                 p.write(",")

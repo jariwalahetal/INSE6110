@@ -8,14 +8,15 @@ import operator
 from INSE6110.FinalCode.PreprocessForSpamAssasinDatabase import StartPreprocessing
 import numpy as np
 sys.path.append("..")
-from INSE6110.FinalCode.PreprocessForSpamAssasinDatabase import *
 from INSE6110.FinalCode.SimulateResults import *
 from INSE6110.FinalCode.KNNImplementation import *
 from INSE6110.FinalCode.NaiveBayesImplementation import *
+from INSE6110.FinalCode.DecisionTreeImplementation import  *
+from INSE6110.FinalCode.SVMImplementation import *
 
 #define global variables
-folds = 2
-repeats = 1
+folds = 5
+repeats = 2
 K = 5
 simulateResults = SimulateResults()
 label = [0, 1]
@@ -94,13 +95,15 @@ print("processing k folds for spambase")
 testRecords = []
 predictedRecordsForKNN = []
 predictedRecordsForNB = []
+predictedRecordsForDT = []
+predictedRecordsForSVM = []
 
 foldIndex = 1
 for train_index, test_index in kf.split(X):
     X_train, X_test = X[train_index], X[test_index]
     Y_train, Y_test = Y[train_index], Y[test_index]
 
-    print(" generating prediction for folds no - " + str(foldIndex) + "..." )
+    print(" generating prediction for folds (no - " + str(foldIndex) + ")..." )
     foldIndex = foldIndex + 1
 
     #GET KNN Prediction
@@ -113,30 +116,82 @@ for train_index, test_index in kf.split(X):
     nb = NB(X_train, Y_train, X_test)
     predictionsForNBForTheFold = nb.getPredictions()
 
+    # GET Decision Tree Prediction
+    print("         Getting Decision Tree results...")
+    dt = DecisionTree(X_train, Y_train, X_test)
+    predictedRecordsForDTForTheFold = dt.getPrediction()
+
+    # GET SVM Prediction
+    print("         Getting SVM results...")
+    svm = SupportVectorMachine(X_train, Y_train, X_test)
+    predictedRecordsForSVMForTheFold = svm.getPrediction()
+
     #appends records for displaying results
-    print(Y_test)
-    testRecords.append(Y_test)
-    predictedRecordsForKNN.append(predictionsForKNNForTheFold)
-    predictedRecordsForNB.append(predictionsForNBForTheFold)
+    for t in Y_test:
+        testRecords.append(t)
+
+    for t in predictionsForKNNForTheFold:
+        predictedRecordsForKNN.append(t)
+
+
+    for t in predictionsForNBForTheFold:
+        predictedRecordsForNB.append(t)
+
+    for t in predictedRecordsForDTForTheFold:
+        predictedRecordsForDT.append(t)
+
+    for t in predictedRecordsForSVMForTheFold:
+        predictedRecordsForSVM.append(t)
 
 
 #get confusionmatrix
 cmForKNN = simulateResults.getConfusionMatrix(testRecords, predictedRecordsForKNN)
 print("Result for Spambase - KNN")
 print(cmForKNN)
+print(simulateResults.getAccuracy(testRecords,predictedRecordsForKNN))
+
 
 cmForNB = simulateResults.getConfusionMatrix(testRecords, predictedRecordsForNB)
 print("Result for Spambase - NB")
 print(cmForNB)
+print(simulateResults.getAccuracy(testRecords,predictedRecordsForNB))
+
+cmForDT = simulateResults.getConfusionMatrix(testRecords, predictedRecordsForDT)
+print("Result for Spambase - Decision Tree")
+print(cmForDT)
+print(simulateResults.getAccuracy(testRecords,predictedRecordsForDT))
+
+cmForSVM = simulateResults.getConfusionMatrix(testRecords, predictedRecordsForSVM)
+print("Result for Spambase - SVM")
+print(cmForSVM)
+print(simulateResults.getAccuracy(testRecords,predictedRecordsForSVM))
 
 #plot confusionmatrix
 simulateResults.plot_confusion_matrix(cmForKNN,label,'Confusion matrix for KNN - Spambase')
 simulateResults.plot_confusion_matrix(cmForNB,label,'Confusion matrix for NB - Spambase')
+simulateResults.plot_confusion_matrix(cmForKNN,label,'Confusion matrix for Decision Tree - Spambase')
+simulateResults.plot_confusion_matrix(cmForNB,label,'Confusion matrix for SVM - Spambase')
 
+#Step 3: Preprocess Data
+print("Preprocess Data")
+processedData = []
 
+sdr,ldr,tdr= simulateResults.calculate(cmForKNN)
+processedData.append({"classifier":"KNN", "sdr":sdr, "ldr":ldr, "tdr":tdr})
 
+sdr,ldr,tdr= simulateResults.calculate(cmForNB)
+processedData.append({"classifier":"NaiveBayes", "sdr":sdr, "ldr":ldr, "tdr":tdr})
 
+sdr,ldr,tdr= simulateResults.calculate(cmForDT)
+processedData.append({"classifier":"DecisionTree", "sdr":sdr, "ldr":ldr, "tdr":tdr})
 
+sdr,ldr,tdr= simulateResults.calculate(cmForSVM)
+processedData.append({"classifier":"SVM", "sdr":sdr, "ldr":ldr, "tdr":tdr})
+
+print(processedData)
+
+#Step 4: Show graph
+simulateResults.generateGraph(processedData)
 
 
 
